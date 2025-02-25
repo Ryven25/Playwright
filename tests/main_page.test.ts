@@ -1,10 +1,13 @@
 import { test, expect } from '@playwright/test';
+import path from 'path';
 
 test.describe('Quality Guild Main Page Test', () => {
 
     test.beforeEach(async ({ page }) => {
-        await page.goto("http://167.99.178.249:4450/");
-
+        await page.goto("http://167.99.178.249:4450/", { timeout: 60000 }); //timeOut
+        //  test.setTimeout(120000);
+        //  page.setDefaultNavigationTimeout(60000);
+        //  page.setDefaultTimeout(60000); // for click and checkbox
     });
 
     // test.afterEach(async ({ page }) => {
@@ -97,10 +100,60 @@ test.describe('Quality Guild Main Page Test', () => {
         await page.getByTestId('trickster-radio').click();
         await expect(page.getByTestId('trickster-radio')).toBeChecked();
         await expect(page.getByTestId('hero-radio')).not.toBeChecked();
+    });
 
+
+    test('Level range should be functional', async ({ page }) => {
+        const levelElement = await page.getByTestId("level-range");
+        // await levelElement.fill('75');
+
+        await levelElement.focus();
+        await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("ArrowLeft");
+
+        await expect(page.locator("#skillLevelValue")).toHaveText('51');
+    });
+
+
+    test('Table data should be visible', async ({ page }) => {
+        const row = await page.getByRole('row', { name: 'Bugslayer Eldric' });
+        await expect(row).toBeVisible();
+
+        await expect(row.getByRole('cell', { name: 'eldric@realmwatchers.com' })).toBeVisible();
+        await expect(row.getByRole('cell', { name: 'Hero of Quality' })).toBeVisible();
+        await expect(row.getByRole('cell', { name: '85' })).toBeVisible();
+    });
+
+    test('Drag and Drop should be visible', async ({ page }) => {
+        const source = await page.getByTestId('hero1-image');
+        const target = await page.getByTestId('team-area');
+
+        const initialBox = await source.boundingBox();
+        if (!initialBox) throw new Error('Could not find initial box');
+
+        await source.dragTo(target);
+
+        const finalBox = await source.boundingBox();
+        if (!finalBox) throw new Error('Could not find initial box');
+
+        await expect(finalBox.x).not.toBe((initialBox.x));
+        await expect(finalBox.y).not.toBe((initialBox.y));
 
     });
 
+    test('Buttons should be green', async ({ page }) => {
+        const button = await page.getByRole('button', { name: 'Guild Info' });
+        await expect(button).toHaveCSS('background-color', 'rgb(26, 188, 156)');
+    });
+
+
+    test('File upload should be functional', async ({ page }) => {
+        const filePath = path.resolve(__dirname, '../assests/Viking.jpg');
+        await page.getByTestId('photo-upload').setInputFiles(filePath);
+
+        await expect(page.locator('#hero3')).toBeVisible();
+    });
 
 });
 

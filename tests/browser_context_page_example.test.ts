@@ -12,6 +12,6 @@ test('browser - context - page example', async () => {
     await page1.goto("https://www.google.com/");
     await page2.goto("https://en.wikipedia.org/");
 
-    await page1.waitForTimeout(10000);
+    //  await page1.waitForTimeout(10000);
     await page2.waitForTimeout(10000);
 });
